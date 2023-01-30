@@ -7,5 +7,5 @@ ARCDIR = '/var/lib/sympa/arc'
 ARCHIVES = os.listdir(ARCDIR)
 
 for list in ARCHIVES:
-    listdir = ARCDIR + '/list'
+    listdir = f"{ARCDIR}/{list}"
     breakpoint
