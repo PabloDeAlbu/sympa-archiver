@@ -2,7 +2,7 @@ import datetime
 import os
 import pdb
 from pathlib import Path
-from shutil import make_archive
+from shutil import make_archive, rmtree
 import argparse
 
 ARCDIR = 'rootfs/var/lib/sympa/arc'
@@ -29,7 +29,10 @@ def compress(archive_path, date):
             dt_archive = datetime.datetime.strptime(archive.stem, '%Y-%m')
             if (date >= dt_archive):
                 a = str(archive.resolve())
-                make_archive(base_name=a, root_dir=a, format='zip')
+                zip_file = make_archive(base_name=a, root_dir=a, verbose=True, format='zip')
+                if (zip_file): 
+                    print(zip_file)
+                    rmtree(archive)
     
 
 
