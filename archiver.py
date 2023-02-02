@@ -16,16 +16,19 @@ parser.add_argument('--domain', default='forums.rio20.net')
 parser.add_argument('--date', default='2019-02')
 args = parser.parse_args()
 
-archives = []
+def status(archive_path):
+    for archive in archive_path.iterdir():
+        if archive.is_dir():
+            print(archive.stem)
+        if archive.suffix == '.zip':
+            print(archive.stem + " COMPRESSED")
 
-def main(action, list, domain, date):
-    archive_dir = f"{ARCDIR}/{list}@{domain}"
-    archive_path = Path(archive_dir)
-    dt = datetime.datetime.strptime(date, '%Y-%m')
+def compress(archive_path, date):
     for archive in archive_path.iterdir():
         if archive.is_dir():
             dt_archive = datetime.datetime.strptime(archive.stem, '%Y-%m')
-            print(dt >= dt_archive)
+            if (date >= dt_archive):
+                make_archive(str(archive.resolve()), root_dir=archive_dir, format='zip')
     
 
 
@@ -34,8 +37,13 @@ list = args.list
 domain = args.domain
 date = args.date
 
+archive_dir = f"{ARCDIR}/{list}@{domain}"
+archive_path = Path(archive_dir)
+dt = datetime.datetime.strptime(date, '%Y-%m')
 
 try:
-    main(action, list, domain, date)
+    if action == 'status': status(archive_path)
+    if action == 'compress': compress(archive_path, dt)
+    if action == 'uncompress': compress(archive_path, dt)
 except Exception as err:
     print('ERROR:', err)
