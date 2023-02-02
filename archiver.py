@@ -28,7 +28,8 @@ def compress(archive_path, date):
         if archive.is_dir():
             dt_archive = datetime.datetime.strptime(archive.stem, '%Y-%m')
             if (date >= dt_archive):
-                make_archive(str(archive.resolve()), root_dir=archive_dir, format='zip')
+                a = str(archive.resolve())
+                make_archive(base_name=a, root_dir=a, format='zip')
     
 
 
