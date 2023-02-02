@@ -1,4 +1,5 @@
 import datetime
+import glob
 import os
 import pdb
 from pathlib import Path
@@ -11,12 +12,14 @@ MAIL_LIST = os.listdir(ARCDIR)
 parser = argparse.ArgumentParser(description='Deinput_filees a new domain in Sympa.')
 #parser.add_argument('integers', metavar='N', type=int, nargs='+', help='an integer for the accumulator')
 parser.add_argument('--action', '-a', default='status', choices=['status','compress','uncompress'])
-parser.add_argument('--list', default='equipazoprueba')
-parser.add_argument('--domain', default='forums.rio20.net')
+parser.add_argument('--list', default='*')
+parser.add_argument('--domain', required=True, default='forums.rio20.net')
 parser.add_argument('--date', default='2019-02')
 args = parser.parse_args()
 
 def status(archive_path):
+    print("*********************************************")
+    print(f"{archive_path} status\n")
     for archive in sorted(archive_path.iterdir()):
         if archive.is_dir():
             print(archive.stem)
@@ -58,9 +61,19 @@ archive_dir = f"{ARCDIR}/{list}@{domain}"
 archive_path = Path(archive_dir)
 dt = datetime.datetime.strptime(date, '%Y-%m')
 
+mail_lists = []
+dirs = glob.glob(f"{archive_path}")
+for dir in dirs:
+    list_dir = Path(dir)
+    mail_lists.append(list_dir)
+
 try:
-    if action == 'status': status(archive_path)
-    if action == 'compress': compress(archive_path, dt)
-    if action == 'uncompress': uncompress(archive_path, dt)
+    if action == 'status': 
+        for l in mail_lists:
+            status(Path(l))
+    if action == 'compress': 
+        compress(archive_path, dt)
+    if action == 'uncompress': 
+        uncompress(archive_path, dt)
 except Exception as err:
     print('ERROR:', err)
