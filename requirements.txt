@@ -1,2 +1,2 @@
 pdbpp==0.10.3
-
+python-decouple==3.7
