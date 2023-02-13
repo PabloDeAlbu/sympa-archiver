@@ -7,6 +7,8 @@ from pathlib import Path
 from shutil import make_archive, rmtree, unpack_archive
 import argparse
 from decouple import config
+import re
+
 ARC_DIR = config('ARC_DIR')
 MAIL_LIST = os.listdir(ARC_DIR)
 today = datetime.date.today()
@@ -26,6 +28,14 @@ args = parser.parse_args()
 
 to_compress = []
 to_uncompress = []
+
+def valid_archive(archive):
+    pattern = re.compile(r'^([\d]{4})-[\d]{1,2}')
+    res = re.match(pattern, archive.stem)
+    if res:
+        return True
+    else:
+        return False
 
 def need_procesing(since, until, archive):
     date_archive = datetime.datetime.strptime(archive.stem, '%Y-%m')
@@ -53,11 +63,9 @@ def do_uncompress(to_uncompress):
     for archive in to_uncompress:
         if archive.suffix == '.zip':
             zip_file = str(archive.resolve())
-            archive_dir = f"{Path(archive).resolve()}/{archive.stem}"
-            os.makedirs(archive_dir, exist_ok=True)
             print(f"{archive.stem} uncompressed")
-            unpack_archive(zip_file, extract_dir=archive_dir)
-            os.remove(zip_file)
+            print("unpack_archive(zip_file, extract_dir=archive_dir)")
+            print(os.remove(zip_file))
 
 action = args.action
 list = args.list
@@ -77,14 +85,6 @@ list_path = Path(archive_dir)
 mail_lists = []
 dirs = glob.glob(f"{list_path}")
 
-for root, dirs, files in os.walk(ARC_DIR):
-    print(root, "consumes")
-    print(sum(getsize(join(root, name)) for name in files))
-    print("bytes in", len(files), "non-directory files")
-    if 'CVS' in dirs:
-        dirs.remove('CVS')  # don't visit CVS directories
-
-
 dispatcher = {
     'compress': do_compress,
     'uncompress': do_uncompress
@@ -99,17 +99,15 @@ for dir in dirs:
     list_dir = Path(dir)
     mail_lists.append(list_dir)
 
-try:
-    print(f"Processing since: {since} until: {until}")
-    for l in mail_lists:
-        list_path = Path(l)
-        list_str = str(list_path).split('/')[-1]
-        print("*********************************************")
-        print(f"{list_str}\n")
-        for archive in sorted(list_path.iterdir()):
+print(f"Processing since: {since} until: {until}")
+for l in mail_lists:
+    list_path = Path(l)
+    list_str = str(list_path).split('/')[-1]
+    print("*********************************************")
+    print(f"{list_str}\n")
+    for archive in sorted(list_path.iterdir()):
+        if (valid_archive(archive)):
             do_status(since, until, archive)
-            
-        if action: dispatcher[action](to_process[action])
+        
+    if action: dispatcher[action](to_process[action])
 
-except Exception as err:
-    print('ERROR:', err)
