@@ -56,7 +56,6 @@ def do_compress(to_compress):
             a = str(archive.resolve())
             zip_file = make_archive(base_name=a, root_dir=a, verbose=True, format='zip')
             if (zip_file): 
-                print(zip_file)
                 rmtree(archive)
     
 def do_uncompress(to_uncompress):
@@ -64,8 +63,10 @@ def do_uncompress(to_uncompress):
         if archive.suffix == '.zip':
             zip_file = str(archive.resolve())
             print(f"{archive.stem} uncompressed")
-            print("unpack_archive(zip_file, extract_dir=archive_dir)")
-            print(os.remove(zip_file))
+            extract_dir = f"{archive.parent}/{archive.stem}"
+            os.makedirs(extract_dir, exist_ok=True)
+            unpack_archive(zip_file, extract_dir=extract_dir)
+            os.remove(zip_file)
 
 action = args.action
 list = args.list
@@ -109,5 +110,5 @@ for l in mail_lists:
         if (valid_archive(archive)):
             do_status(since, until, archive)
         
-    if action: dispatcher[action](to_process[action])
+if action: dispatcher[action](to_process[action])
 
