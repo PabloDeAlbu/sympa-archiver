@@ -1,6 +1,9 @@
 # sympa-archiver
 
-This python script intend to help you in the task of administering the disk usage in your sympa installation.
+This python script is intended to help you in the task of managing disk usage in your sympa installation by compressing the archive of managed mailing lists.
+This script can receive as a parameter a domain, a mailing list and two dates (with the format %Y-%m, Example: 2019-01) that define the period to be processed.
+It can also receive a parameter that defines what to do with the file. These values can be list (default), compress or decompress the file.
+
 
 ## Instalación
 
@@ -40,9 +43,9 @@ Replace in .env **ARC_DIR** with the directory of archives of your Sympa install
 
 ## Example
 
-### Archive status for domain **foo**
+### List status for domain **foo** from 2019-02 until 2021-09
 ```
-python3 archiver.py --domain foo
+python3 archiver.py --domain foo --action list --since 2019-02 --until 2021-09
 ```
 
 
