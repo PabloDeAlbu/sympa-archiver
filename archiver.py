@@ -64,6 +64,7 @@ def do_compress(to_compress):
             a = str(archive.resolve())
             zip_file = make_archive(base_name=a, root_dir=a, verbose=True, format='zip')
             if (zip_file): 
+                print(f"{archive.stem} compressed")
                 rmtree(archive)
     
 def do_uncompress(to_uncompress):
