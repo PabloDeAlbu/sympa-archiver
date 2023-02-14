@@ -17,7 +17,7 @@ two_month_ago = first - datetime.timedelta(days=31)
 
 parser = argparse.ArgumentParser(description='Deinput_filees a new domain in Sympa.')
 #parser.add_argument('integers', metavar='N', type=int, nargs='+', help='an integer for the accumulator')
-parser.add_argument('--action', '-a', default=None, choices=['compress','uncompress'])
+parser.add_argument('--action', '-a', default='list', choices=['list','compress','uncompress'])
 parser.add_argument('--list', default='*')
 parser.add_argument('--domain', required=True)
 parser.add_argument('--date')
@@ -28,6 +28,7 @@ args = parser.parse_args()
 
 to_compress = []
 to_uncompress = []
+mail_lists_status = []
 
 def valid_archive(archive):
     pattern = re.compile(r'^([\d]{4})-[\d]{1,2}')
@@ -45,10 +46,14 @@ def do_status(since, until, archive):
     if need_procesing(since, until, archive):
         if archive.is_dir():
             to_compress.append(archive)
-            print(archive.stem)
+            mail_lists_status.append(f"{archive.stem}")
         if archive.suffix == '.zip':
             to_uncompress.append(archive)
-            print(archive.stem + " COMPRESSED")
+            mail_lists_status.append(f"{archive.stem} COMPRESSED")
+
+
+def do_list(mail_lists_status):
+    print(mail_lists_status)
 
 def do_compress(to_compress):
     for archive in to_compress:
@@ -87,11 +92,13 @@ mail_lists = []
 dirs = glob.glob(f"{list_path}")
 
 dispatcher = {
+    'list': do_list,
     'compress': do_compress,
     'uncompress': do_uncompress
 }
 
 to_process = {
+    'list': mail_lists_status,
     'compress': to_compress,
     'uncompress': to_uncompress
 }
