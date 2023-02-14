@@ -16,7 +16,6 @@ first = today.replace(day=1)
 two_month_ago = first - datetime.timedelta(days=31)
 
 parser = argparse.ArgumentParser(description='Deinput_filees a new domain in Sympa.')
-#parser.add_argument('integers', metavar='N', type=int, nargs='+', help='an integer for the accumulator')
 parser.add_argument('--action', '-a', default='list', choices=['list','compress','uncompress'])
 parser.add_argument('--list', default='*')
 parser.add_argument('--domain', required=True)
@@ -28,7 +27,6 @@ args = parser.parse_args()
 
 to_compress = []
 to_uncompress = []
-mail_lists_status = []
 
 def valid_archive(archive):
     pattern = re.compile(r'^([\d]{4})-[\d]{1,2}')
@@ -42,18 +40,23 @@ def need_procesing(since, until, archive):
     date_archive = datetime.datetime.strptime(archive.stem, '%Y-%m')
     return (since <= date_archive and until >= date_archive)
 
-def do_status(since, until, archive):
-    if need_procesing(since, until, archive):
-        if archive.is_dir():
-            to_compress.append(archive)
-            mail_lists_status.append(f"{archive.stem}")
-        if archive.suffix == '.zip':
-            to_uncompress.append(archive)
-            mail_lists_status.append(f"{archive.stem} COMPRESSED")
+def do_list(mail_lists):
+    print("*********************************************")
+    for l in mail_lists:
+        list = str(l).split('/')[-1]
+        print(list)
+        for archive in mail_lists[l]:
+            print(archive)
 
 
-def do_list(mail_lists_status):
-    print(mail_lists_status)
+
+def do_status(archive):
+    if archive.is_dir():
+        to_compress.append(archive)
+        return (archive.stem)
+    if archive.suffix == '.zip':
+        to_uncompress.append(archive)
+        return (archive.stem + " COMPRESSED")
 
 def do_compress(to_compress):
     for archive in to_compress:
@@ -88,7 +91,7 @@ elif (args.until and args.since):
 archive_dir = f"{ARC_DIR}/{list}@{domain}"
 list_path = Path(archive_dir)
 
-mail_lists = []
+mail_lists = {}
 dirs = glob.glob(f"{list_path}")
 
 dispatcher = {
@@ -98,24 +101,20 @@ dispatcher = {
 }
 
 to_process = {
-    'list': mail_lists_status,
+    'list': mail_lists,
     'compress': to_compress,
     'uncompress': to_uncompress
 }
 
 for dir in dirs:
     list_dir = Path(dir)
-    mail_lists.append(list_dir)
+    mail_lists[list_dir] = []
 
 print(f"Processing since: {since} until: {until}")
-for l in mail_lists:
+for l in mail_lists.keys():
     list_path = Path(l)
-    list_str = str(list_path).split('/')[-1]
-    print("*********************************************")
-    print(f"{list_str}\n")
     for archive in sorted(list_path.iterdir()):
-        if (valid_archive(archive)):
-            do_status(since, until, archive)
+        if (valid_archive(archive) and need_procesing(since, until, archive)):
+            mail_lists[l].append(do_status(archive))
         
 if action: dispatcher[action](to_process[action])
-
